@@ -1,0 +1,18 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ingress-traefik
+  namespace: ingress-traefik
+spec:
+  # externalTrafficPolicy: Local
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: ingress-traefik
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: https
+      port: 443
+      targetPort: https
+---
