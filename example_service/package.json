@@ -1,11 +1,13 @@
 {
   "name": "example_service",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "docker build -t daton/kubernetes_example_service:0.0.1 -t daton/kubernetes_example_service:latest .",
+    "push": "docker push daton/kubernetes_example_service:0.0.1 && docker push daton/kubernetes_example_service:latest"
   },
   "keywords": [],
   "author": "",
