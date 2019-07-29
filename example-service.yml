@@ -1,0 +1,63 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example_service
+data:
+  node_env: production
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    configmap-version: "1"
+  name: example_service
+spec:
+  selector:
+    matchLabels:
+      app: example
+      tier: example_service
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: packly
+        tier: example_service
+    spec:
+      containers:
+        - env:
+          - name: NODE_ENV
+            valueFrom:
+              configMapKeyRef:
+                name: example_service
+                key: node_env
+          image: daton/kubernetes_example_service
+          name: example_service
+          ports:
+            - containerPort: 3000
+          resources: {}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example_service
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app: example
+    tier: example_service
+  clusterIP: None
