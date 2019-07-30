@@ -62,6 +62,22 @@ subjects:
 
 ---
 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/name: ingress-traefik
+  name: certs-claim
+  namespace: ingress-traefik
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
@@ -88,12 +104,34 @@ spec:
         ports:
         - name: http
           containerPort: 80
+        - name: https
+          containerPort: 443
         - name: admin
           containerPort: 8080
         args:
-        - --api
-        - --kubernetes
-        - --logLevel=INFO
+        - "--api"
+        - "--kubernetes"
+        - "--logLevel=INFO"
+        # - "--logLevel=DEBUG"
+        # - "--debug"
+        - "--defaultentrypoints=http,https"
+        - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
+        - "--entrypoints=Name:https Address::443 TLS"
+        - "--acme"
+        - "--acme.onhostrule"
+        - "--acme.entrypoint=https"
+        - "--acme.domains=example.com"
+        - "--acme.email=info@example.com"
+        - "--acme.storage=/certs/acme.json"
+        - "--acme.httpchallenge"
+        - "--acme.httpchallenge.entrypoint=http"
+        volumeMounts:
+        - mountPath: /certs
+          name: certs-claim
+      volumes:
+      - name: certs-claim
+        persistentVolumeClaim:
+          claimName: certs-claim
 
 ---
 
